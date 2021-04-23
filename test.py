@@ -1,4 +1,5 @@
 import cv2
+import pytesseract 
 # print("package import")
 # img = cv2.imread('test.jpg')
 # cv2.imshow('test',img)
