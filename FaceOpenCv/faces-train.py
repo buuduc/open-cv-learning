@@ -7,7 +7,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__ ))
 img_dir= os.path.join(BASE_DIR,"images")
 face_cascade=cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_frontalface_alt2.xml')
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-recognizer.read('trainner.yml')
 current_id =0 
 label_ids={}
 y_labels=[]
@@ -22,20 +21,23 @@ for root,dirs,files in os.walk(img_dir):
             if not  label in label_ids:
                 label_ids[label]=current_id
                 current_id+=1
-            id_= label_ids[label]
+                id_= label_ids[label]
             # print(label_ids)
             # y_labels.append(label) 
             # x_train.append(path)
             pil_image=Image.open(path).convert('L') #grayscale
-            image_array=np.array(pil_image,'uint8')
+            size=(550,550)
+            # final_image= pil_image.resize(size,Image.ANTIALIAS)
+            final_image= pil_image
+            image_array=np.array(final_image,'uint8')
             # print(image_array)    
             faces = face_cascade.detectMultiScale(image_array,scaleFactor=1.1,minNeighbors=3)
-            print(faces)
 
             for (x,y,w,h) in faces:
                 roi = image_array[y:y+h,x:x+w]
+                print(x_train)
+                print(y_labels)
                 x_train.append(roi)
-                print('x train la ',x_train)
                 y_labels.append(id_)
 
 with open('labels.pickle','wb') as f:
