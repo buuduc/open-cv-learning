@@ -11,7 +11,7 @@ current_id =0
 label_ids={}
 y_labels=[]
 x_train=[]
-
+stt=0
 for root,dirs,files in os.walk(img_dir):
     for file in files:
         if file.endswith('png') or file.endswith('jpg'):
@@ -19,8 +19,8 @@ for root,dirs,files in os.walk(img_dir):
             label=os.path.basename(root).replace(' ','-').lower()
             # print(label,path)
             if not  label in label_ids:
-                label_ids[label]=current_id
                 current_id+=1
+                label_ids[label]=current_id
                 id_= label_ids[label]
             # print(label_ids)
             # y_labels.append(label) 
@@ -31,7 +31,7 @@ for root,dirs,files in os.walk(img_dir):
             final_image= pil_image
             image_array=np.array(final_image,'uint8')
             # print(image_array)    
-            faces = face_cascade.detectMultiScale(image_array,scaleFactor=1.1,minNeighbors=3)
+            faces = face_cascade.detectMultiScale(image_array,scaleFactor=1.1,minNeighbors=4)
 
             for (x,y,w,h) in faces:
                 roi = image_array[y:y+h,x:x+w]
@@ -39,6 +39,11 @@ for root,dirs,files in os.walk(img_dir):
                 print(y_labels)
                 x_train.append(roi)
                 y_labels.append(id_)
+                cv2.rectangle(image_array, (x, y), (x+w, y +h), (0, 255,0), 2)
+
+                stt+=1
+            cv2.imshow(f'{stt}',image_array)
+                
 
 with open('labels.pickle','wb') as f:
     pickle.dump(label_ids,f )
@@ -46,3 +51,4 @@ with open('labels.pickle','wb') as f:
 
 recognizer.train(x_train,np.array(y_labels))
 recognizer.save("trainner.yml")
+cv2.waitKey(0)

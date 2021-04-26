@@ -4,8 +4,8 @@ import pickle
 
 cap=cv2.VideoCapture(0)
 face_cascade=cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_frontalface_alt2.xml')
-eye_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_eye.xml') 
-smile_cascade =cv2.CascadeClassifier('cascades/data/haarcascade_smile.xml') 
+eye_cascade = cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_eye.xml') 
+smile_cascade =cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_smile.xml') 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read("trainner.yml")
 labels = {'person_name':1 }
@@ -19,16 +19,17 @@ while(True):
     # capture frame by frame 
     ret,frame = cap.read()
     gray= cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray,scaleFactor=1.1,minNeighbors=3)
+    faces = face_cascade.detectMultiScale(gray,scaleFactor=1.5,minNeighbors=4)
     for x,y,w,h in faces:
         # print(x,y,w,h)
         roi_gray= gray[y:y+h, x:x+w]
+        roi_color=frame[y:y+h, x:x+w]
 
 # recognize? deep learned model predict keras tensorflow pytorch scikit learn 
         id_,conf =recognizer.predict(roi_gray)
-        if conf>=45: #and conf <=85:
+        if conf>=70: #and conf <=85:
             print(id_,conf)
-            print(labels[id_])
+            # print(labels[id_])
 
             font=cv2.FONT_HERSHEY_SIMPLEX
             name= labels[id_]
@@ -45,10 +46,16 @@ while(True):
         end_cord_y= y + h 
         cv2.rectangle(frame,(x,y),(end_cord_x,end_cord_y),color,stroke)
 
+        subitems=smile_cascade.detectMultiScale(roi_gray) 
+        for (ex,ey,ew,eh) in subitems:
+            cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey +eh), (0, 255,0), 2)
 
-        # eyes=eye_cascade.detectMultiScale(gray)  
+
+        # eyes=eye_cascade.detectMultiScale(roi_gray) 
         # for (ex,ey,ew,eh) in eyes:
-        #     cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey +eh), (8, 255,6), 2)
+        #     print('ex')
+        #     cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey +eh), (0, 255,0), 2)
+
     
     
     
