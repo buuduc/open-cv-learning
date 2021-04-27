@@ -6,13 +6,13 @@ import pickle
 import imutils
 BASE_DIR = os.path.dirname(os.path.abspath(__file__ )) 
 img_dir= os.path.join(BASE_DIR,"images")
-face_cascade=cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_frontalface_alt2.xml')
+face_cascade=cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_frontalface_default.xml')
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 current_id =0 
 label_ids={}
 y_labels=[]
 x_train=[]
-
+stt=0
 
 
 
@@ -41,7 +41,7 @@ x_train=[]
 
 for root,dirs,files in os.walk(img_dir):
     for file in files:
-        if file.endswith('png') or file.endswith('jpg'):
+        if file.endswith('png') or file.endswith('jpg') or file.endswith('JPG'):
             path = os.path.join(root,file)
             label=os.path.basename(root).replace(' ','-').lower()
             # print(label,path)
@@ -54,9 +54,9 @@ for root,dirs,files in os.walk(img_dir):
             # x_train.append(path)
 
             pil_image = cv2.imread(path)
-            pil_image=imutils.resize(pil_image,width=500)
+            # pil_image=imutils.resize(pil_image,width=500)
             image_array=cv2.cvtColor(pil_image,cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(image_array,scaleFactor=1.2,minNeighbors=7)
+            faces = face_cascade.detectMultiScale(image_array,scaleFactor=1.1,minNeighbors=7,minSize=(200,200))
 
 
 
@@ -65,14 +65,17 @@ for root,dirs,files in os.walk(img_dir):
 
             for (x,y,w,h) in faces:
                 roi = image_array[y:y+h,x:x+w]
-                print(x_train)
+                # print(x_train)
+                print(label,stt)
+                print(w,h)
                 print(y_labels)
                 x_train.append(roi)
                 y_labels.append(id_)
-                # cv2.rectangle(image_array, (x, y), (x+w, y +h), (0, 255,0), 2)
+                cv2.rectangle(pil_image, (x, y), (x+w, y +h), (0, 255,0), 2)
 
-                # stt+=1
-            # cv2.imshow(f'{stt}',image_array)
+            stt+=1
+            # cv2.imshow(f'{stt}: {label}',image_array)
+            cv2.imwrite(f'anhtest/{label}-{stt}.jpg',pil_image)
                 
 
 with open('labels.pickle','wb') as f:
@@ -81,3 +84,4 @@ with open('labels.pickle','wb') as f:
 
 recognizer.train(x_train,np.array(y_labels))
 recognizer.save("trainner.yml")
+cv2.waitKey(0)
