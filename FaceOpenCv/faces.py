@@ -47,17 +47,17 @@ def checkAttendance(name):
             peopleCheckin[name]['checkin']=True
             peopleCheckin[name]['time']=datetime.now()
             markAttendance(name)
-            for key in peopleCheckin:
-                peopleCheckin[key]['count']=0
-
+            
         else:
             peopleCheckin[name]['count']+=1
-    print(peopleCheckin[name])
+    # print(peopleCheckin[name])
 
 def initAttendance():
     with open('Attendance.csv','w') as f:
         f.writelines('Name, Date \n')
-
+def deleteFrameCheck():
+    for key in peopleCheckin:
+                peopleCheckin[key]['count']=0
 
 
 def recForFace(img,name,x,y,w,h):
@@ -86,7 +86,7 @@ initAttendance()
 cap=cv2.VideoCapture(0)
 cap.set(3, 1280)
 cap.set(4, 720)
-face_cascade=cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_frontalface_default.xml')
+face_cascade=cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_frontalface_alt2.xml')
 eye_cascade = cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_eye.xml') 
 smile_cascade =cv2.CascadeClassifier('FaceOpenCv/data/haarcascade_smile.xml') 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
@@ -103,17 +103,19 @@ with open('labels.pickle','rb') as f:
 while(True):
     # capture frame by frame 
     ret,frame = cap.read()
-
-    gray= cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray,scaleFactor=1.1,minNeighbors=7,minSize=(50,50))
+    gray= cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+    faces = face_cascade.detectMultiScale(gray,scaleFactor=1.1,minNeighbors=4,minSize=(50,50))
+    if len(faces)==0 :
+        deleteFrameCheck()
     for x,y,w,h in faces:
         # print(x,y,w,h)
+        gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
         roi_gray= gray[y:y+h, x:x+w]
         roi_color=frame[y:y+h, x:x+w]
 
 # recognize? deep learned model predict keras tensorflow pytorch scikit learn 
         id_,conf =recognizer.predict(roi_gray)
-        # print(id_,conf)
+        print(id_,conf)
         if conf>=30 and conf <=100:
             # print(labels[id_])
             font=cv2.FONT_HERSHEY_SIMPLEX

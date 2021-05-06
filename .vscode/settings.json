@@ -1,17 +1,17 @@
 {
-    "python.pythonPath": "venv/bin/python",
-    "cSpell.words": [
-        "as",
-        "dump",
-        "f",
-        "face",
-        "ids",
-        "label",
-        "labels",
-        "open",
-        "pickle",
-        "recognition",
-        "wb",
-        "with"
-    ]
+  "python.pythonPath": "venv/bin/python",
+  "cSpell.words": [
+    "as",
+    "dump",
+    "f",
+    "face",
+    "ids",
+    "label",
+    "labels",
+    "open",
+    "pickle",
+    "recognition",
+    "wb",
+    "with"
+  ]
 }
