@@ -62,15 +62,15 @@ for root,dirs,files in os.walk(img_dir):
             # image_array=cv2.resize(image_array,(0,0),None,0.5,0.5)
             facesCurFrame = face_recognition.face_locations(image_array)
             facesEncoding=face_recognition.face_encodings(image_array)
-            # face 
+            name=os.path.splitext(file)[0]
             if facesCurFrame:
                 for face,encode in zip(facesCurFrame,facesEncoding):
                     stt+=1
                     # print(faces)
                     cv2.rectangle(image_array,(face[3],face[0]),(face[1],face[2]),(255,0,255),2)
                     cv2.imwrite(f'anhtest/{label}-{stt}.jpg',image_array)
-                    all_face_encodings[label] = encode
-                    print(f'anhtest/{label}-{stt}.jpg')
+                    all_face_encodings[name] = encode
+                    print(f'anhtest/{name}-{stt}.jpg')
 
 with open('dataset_faces.dat', 'wb') as f:
     pickle.dump(all_face_encodings, f)
