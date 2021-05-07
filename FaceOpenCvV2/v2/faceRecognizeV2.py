@@ -5,6 +5,9 @@ import face_recognition
 import numpy as np
 import pickle
 import imutils
+from datetime import datetime, timedelta
+from csv import writer
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__ )) 
 # img_dir= os.path.join(BASE_DIR,"images")
 img_dir='FaceOpenCvV2/images'
@@ -14,19 +17,50 @@ y_labels=[]
 x_train=[]
 stt=0
 
+peopleCheckin ={}
+def markAttendance(name):
+        # Open file in append mode
+    with open('Attendance.csv', 'a+', newline='') as write_obj:
+        now = datetime.now()
+        dtString= now.strftime('%H:%M:%S  %D')
+        # Create a writer object from csv module
+        csv_writer = writer(write_obj)
+        # Add contents of list as last row in the csv file
+        csv_writer.writerow([name,dtString])
+    
+def checkAttendance(name):
+    if name not in peopleCheckin:
+        peopleCheckin[name]={'time': datetime.now()-timedelta(seconds=50),'count': 1,'checkin': False}
+    if datetime.now() - peopleCheckin[name]['time'] > timedelta(seconds=5):
+        if peopleCheckin[name]['count']>2:
+            peopleCheckin[name]['count']=0
+            peopleCheckin[name]['checkin']=True
+            peopleCheckin[name]['time']=datetime.now()
+            markAttendance(name)
+            
+        else:
+            peopleCheckin[name]['count']+=1
+    # print(peopleCheckin[name])
+
+def initAttendance():
+    with open('Attendance.csv','w') as f:
+        f.writelines('Name, Date \n')
+def deleteFrameCheck():
+    for key in peopleCheckin:
+                peopleCheckin[key]['count']=0
 def recForFace(frame,name,x,y,end_cord_x,end_cord_y):
     stroke =2 
-    color =(255,0,0)
-    check='unknown human'
-    # if (name == 'unknown'):
-    #     color =(255,0,0)
-    #     check='unknown human'
-    # elif peopleCheckin[name]['checkin']:
-    #     color =(0,255,0)
-    #     check ='checked'
-    # else:
-    #     color =(0,0,255)
-    #     check ='uncheck'
+    # color =(255,0,0)
+    # check='unknown human'
+    if (name == 'unknown'):
+        color =(255,0,0)
+        check='unknown human'
+    elif peopleCheckin[name]['checkin']:
+        color =(0,255,0)
+        check ='checked'
+    else:
+        color =(0,0,255)
+        check ='uncheck'
     cv2.rectangle(frame,(x,y),(end_cord_x,y-20),color,cv2.FILLED) #o unknown tren cung
     cv2.rectangle(frame,(x,y),(end_cord_x,end_cord_y),color,stroke)
     cv2.rectangle(frame,(x,end_cord_y-35),(end_cord_x,end_cord_y),color,cv2.FILLED) #o ten ben duoi
@@ -42,12 +76,13 @@ with open('dataset_faces.dat', 'rb') as f:
 faceNameArray = list(all_face_encodings.keys())
 faceEncodeArray = np.array(list(all_face_encodings.values()))
 
-
+initAttendance()
 cap = cv2.VideoCapture(0)
 while True: 
     # img=cv2.imread('FaceRecognition/ImagesBasic/wc2.jpg')
     success , realImg = cap.read()
-    realImg = cv2.resize(realImg,(480,320))
+    # realImg = cv2.resize(realImg,(480,320))
+    realImg=imutils.resize(realImg,width=500)
     img = cv2.cvtColor(realImg, cv2.COLOR_BGR2RGB)
     print(len(face_recognition.face_locations(img)))
     
@@ -64,19 +99,15 @@ while True:
         while True:
             minIndex=np.argmin(faceDis)
             if matches[minIndex]:
+                checkAttendance(faceNameArray[minIndex])
                 recForFace(realImg,faceNameArray[minIndex],x1,y1,x2,y2+40)
                 print(faceNameArray[minIndex])
                 break
             if len(matches)<=1:
                 break
-            
-                # faceDis.pop(minIndex)
-                # matches.pop(minIndex)
-                # faceNameArrayTemp.pop(minIndex)
             faceDis=np.delete(faceDis,minIndex)
             matches=np.delete(matches,minIndex)
             faceNameArrayTemp=np.delete(faceNameArrayTemp,minIndex)
-            print(faceDis)
         print(faceDis,matches)
         
         # recForFace(realImg,faceNameArray[index],x1,y1,x2,y2+40)
